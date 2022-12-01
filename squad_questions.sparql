@@ -1,0 +1,2 @@
+SELECT var_danger WHERE brack_open <dbo_Zinc> <_dangerAfterInjury> var_danger brack_closed
+SELECT var_count WHERE brack_open <fred_Imperial_Officer> <dul_hasDataValue> var_count brack_closed

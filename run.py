@@ -23,6 +23,7 @@ from __future__ import absolute_import
 import argparse
 import logging
 import os
+import pickle
 import random
 import re
 from io import open
@@ -149,7 +150,7 @@ def set_seed(seed=42):
     os.environ['PYHTONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
+    torch.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
 
 
@@ -302,6 +303,7 @@ def main():
     if args.do_train:
         # Prepare training data loader
         train_examples = read_examples(args.train_filename + "." + args.source, args.train_filename + "." + args.target)
+        train_examples = train_examples[0:100]
         train_features = convert_examples_to_features(train_examples, tokenizer, args, stage='train')
         all_source_ids = torch.tensor([f.source_ids for f in train_features], dtype=torch.long)
         all_source_mask = torch.tensor([f.source_mask for f in train_features], dtype=torch.long)
@@ -377,7 +379,7 @@ def main():
                     eval_examples, eval_data = dev_dataset['dev_bleu']
                 else:
                     eval_examples = read_examples(args.dev_filename  + "." + args.source, args.dev_filename + "." + args.target)
-                    eval_examples = random.sample(eval_examples, min(1000, len(eval_examples)))
+                    eval_examples = random.sample(eval_examples, min(10, len(eval_examples)))
                     eval_features = convert_examples_to_features(eval_examples, tokenizer, args, stage='test')
                     all_source_ids = torch.tensor([f.source_ids for f in eval_features], dtype=torch.long)
                     all_source_mask = torch.tensor([f.source_mask for f in eval_features], dtype=torch.long)
@@ -435,6 +437,11 @@ def main():
                     model_to_save = model.module if hasattr(model, 'module') else model  # Only save the model it-self
                     output_model_file = os.path.join(output_dir, "pytorch_model.bin")
                     torch.save(model_to_save.state_dict(), output_model_file)
+
+        with open('NLP2SPARQL_Model.pkl', 'wb') as file_pi:
+            pickle.dump(model, file_pi)
+        with open('NLP2SPARQL_Model_args.pkl', 'wb') as file_pi:
+            pickle.dump(args, file_pi)
 
     if args.do_test:
         files = []
